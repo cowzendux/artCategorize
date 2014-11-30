@@ -18,12 +18,17 @@
 * Version History
 ********
 * 2012-08-03 Created
+* 2014-11-30 Corrected value labels
 
 set printback=off.
 begin program python.
 import spss, spssaux
 
 def artCategorize(variable, catnum):
+   submitstring = """OMS /SELECT ALL EXCEPT = [WARNINGS] 
+    /DESTINATION VIEWER = NO 
+    /TAG = 'NoJunk'."""
+   spss.Submit(submitstring)
 
 #######
 # Obtain cutpoints
@@ -53,12 +58,16 @@ def artCategorize(variable, catnum):
 # Always a question as to whether cutpoints go into upper or lower category
 # Trying both and going with whichever gives more even groups
 
+# Define cutpoint variables
+   submitstring = "numeric {0}_ac {0}_acl {0}_acu (f8.0).".format(variable[0:4])
+   print(submitstring)
+   spss.Submit(submitstring)
+
 # Putting cutpoint into lower category
    catname = variable[0:4] + "_acl"
-   submitstring = """numeric %s (f8.0).
-RECODE %s
+   submitstring = """RECODE %s
 (Lowest thru %s=1)
-""" %(catname, variable, cutlist[0])
+""" %(variable, cutlist[0])
    for t in range(len(cutlist)-1):
       submitstring = submitstring + """(%s thru %s=%s)
 """ %(str(cutlist[t]), str(cutlist[t+1]), str(t+2))
@@ -68,8 +77,7 @@ execute.""" %(str(cutlist[len(cutlist)-1]), str(len(cutlist)+1), catname)
 
 # Putting cutpoint into upper category
    catname = variable[0:4] + "_acu"
-   submitstring = """numeric %s (f8.0).
-RECODE %s""" %(catname, variable)
+   submitstring = """RECODE %s""" %(variable)
    submitstring = submitstring + """
 (%s thru Highest=%s)
 """ %(str(cutlist[len(cutlist)-1]), str(len(cutlist)+1))
@@ -132,33 +140,34 @@ variable labels %s 'Artificial categorization of %s'.""" %(catname, bestname, ca
 
 # Assign value labels
    if (sumsofsquares[0] > sumsofsquares[1]):
-      print "XXX"
       submitstring = """value labels %s
-1 '%s < %s'""" %(variable, catname, cutlist[0])
+1 '%s < %s'""" %(catname, variable, cutlist[0])
       for t in range(len(cutlist)-1):
          submitstring = submitstring + """
 %s '%s <= %s < %s'""" %(str(t+2), str(cutlist[t]), variable, str(cutlist[t+1]))
       submitstring = submitstring + """
 %s '%s >= %s'.   
 """ %(str(len(cutlist)+1), variable, str(cutlist[len(cutlist)-1]))
-      print submitstring
+      spss.Submit(submitstring)
    else:
       submitstring = """value labels %s
-1 '%s <= %s'""" %(variable, catname, cutlist[0])
+1 '%s <= %s'""" %(catname, variable, cutlist[0])
       for t in range(len(cutlist)-1):
-         print "YYY"
          submitstring = submitstring + """
 %s '%s < %s <= %s'""" %(str(t+2), str(cutlist[t]), variable, str(cutlist[t+1]))
       submitstring = submitstring + """
 %s '%s > %s'.   
 """ %(str(len(cutlist)+1), variable, str(cutlist[len(cutlist)-1]))
-      print submitstring
+      spss.Submit(submitstring)
 
 ####
 # Clean up
 ####
    submitstring = """execute.
 delete variables %s %s.""" %(catvars[0], catvars[1])
+   spss.Submit(submitstring)
+   
+   submitstring = """OMSEND TAG = 'NoJunk'."""
    spss.Submit(submitstring)
 
 end program python.
