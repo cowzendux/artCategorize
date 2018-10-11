@@ -1,4 +1,4 @@
-#artCategorize
+# artCategorize
 
 SPSS Python Extension function to create categories by splitting a continuous variable
 
@@ -6,11 +6,11 @@ This function can be used to create median splits or other forms of artificial c
 
 This and other SPSS Python Extension functions can be found at http://www.stat-help.com/python.html
 
-##Usage
+## Usage
 **artCategorize(variable, catnum)**
 * "variable" is a string variable providing the name of the continuous variable that will form the basis of the categorization. This argument is required.
 * "catnum" is the number of levels you want in your artificial categorization. This argument is required.
 
-##Example
+## Example
 **artCategorize("age", 4)**
 * This would create a variable named "age_ac" that would have 4 different levels, corresponding to 4 different age groups. These groups will be chosen in a way to make them as even as possible.
